@@ -15,6 +15,7 @@ class Board
   def initialize(grid = [])
   	@grid = grid
   	@cursor = [0, 0]
+  	@selection = false
   	load_board if grid.empty?
   end
 
@@ -29,11 +30,13 @@ class Board
   def render
   	system "clear"
   	@grid.each_with_index do |row, idx1|
-  	  row.each_with_index do |square, idx2|
- 		if [idx1, idx2] == @selection 
- 		  print_with_background(square, :green)
- 		elsif [idx1, idx2] == @cursor
+  	  row.each_with_index do |square, idx2|	
+ 		if [idx1, idx2] == @cursor
  		  print_with_background(square, :yellow)
+ 		elsif [idx1, idx2] == @selection 
+ 		  print_with_background(square, :green)
+ 		elsif available.include?([idx1, idx2])
+ 		  print_with_background(square, :blue)
  		elsif ( idx1 + idx2 ).even?
   		  print_with_background(square, :black)
  		else
@@ -44,7 +47,15 @@ class Board
   	end
   end
 
-  def make_selection
+  def available
+  	if selection 
+  	  self[*selection].available_moves(selection)
+  	else
+  	  self[*cursor].available_moves(cursor)
+  	end
+  end
+
+  def make_selection(color)
   	place_holder = @cursor
   	@cursor = move_cursor
   	until place_holder == @cursor
@@ -77,14 +88,24 @@ class Board
   		grid.flatten.none? { |piece| piece.color == :b }
   end
 
-  protected
-	  def transpose_delta(current_pos, delta)
-	  	[current_pos, delta].transpose.map {|coord| coord.reduce(:+) }
-	  end
+  def transpose_delta(current_pos, delta)
+  	[current_pos, delta].transpose.map {|coord| coord.reduce(:+) }
+  end
 
-	  def onboard?(intended_location)
-	    intended_location.all? { |coord| coord.between?(0, 7) }
-	  end
+  def onboard?(intended_location)
+    intended_location.all? { |coord| coord.between?(0, 7) }
+  end
+
+  def is_empty?(coord)
+  	self[*coord].is_a?(EmptySquare)
+  end
+
+  def enemy_piece?(coord, opponent_color)
+  	self[*coord].color == opponent_color
+  end
+
+
+  protected
 
 	  def populate_evens(color)
 	  	arr = []

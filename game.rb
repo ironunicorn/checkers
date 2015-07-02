@@ -11,11 +11,12 @@ class Game
   def play
   	until board.over?
   	  board.render
-  	  start_pos = board.make_selection
+  	  start_pos = board.make_selection(@players.first)
   	  board.selection = start_pos
-  	  end_pos = board.make_selection
+  	  end_pos = board.make_selection(@players.first)
   	  board.move(start_pos, end_pos)
   	  board.selection = false
+  	  @players.rotate
   	end
   	board.render
   end
