@@ -10,7 +10,7 @@ class Game
 
   def play
   	until board.over?
-  	  board.render
+  	  board.display
   	  start_pos = board.make_selection(@players.first)
   	  board.selection = start_pos
   	  end_pos = board.make_selection(@players.first)
@@ -18,7 +18,7 @@ class Game
   	  board.selection = false
   	  @players.rotate
   	end
-  	board.render
+  	board.display
   end
 
 

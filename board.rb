@@ -4,6 +4,7 @@ require_relative 'piece'
 
 class Board
   attr_accessor :grid, :cursor, :selection
+
   KEY_PRESSES = {
   	"UP ARROW" => [-1, 0],
   	"DOWN ARROW" => [1, 0],
@@ -27,7 +28,7 @@ class Board
   	@grid[row][col] = piece
   end
 
-  def render
+  def display
   	system "clear"
   	@grid.each_with_index do |row, idx1|
   	  row.each_with_index do |square, idx2|	
@@ -55,6 +56,7 @@ class Board
   	end
   end
 
+#TODO make this human player
   def make_selection(color)
   	place_holder = @cursor
   	@cursor = move_cursor
@@ -62,13 +64,29 @@ class Board
   	  place_holder = @cursor
   	  @cursor = move_cursor
   	end
+
   	place_holder
   end
 
   def move(start_pos, end_pos)
   	piece = self[*start_pos]
+
   	self[*start_pos] = EmptySquare.new
   	self[*end_pos] = piece
+
+  	kill_enemy(start_pos, end_pos) if jump?(start_pos, end_pos)
+  end
+
+  def jump?(start_pos, end_pos)
+  	delta = [start_pos, end_pos].transpose.map { |numbers| numbers.inject(:-) }
+  	
+  	delta.all? { |change| change.abs == 2 }
+  end
+
+  def kill_enemy(start_pos, end_pos)
+  	enemy_row = (start_pos[0] + end_pos[0]) / 2
+    enemy_column = (start_pos[1] + end_pos[1]) / 2
+    self[enemy_row, enemy_column] = EmptySquare.new
   end
 
   def deep_dup
@@ -80,6 +98,7 @@ class Board
   	  end
   	  new_grid << new_line
   	end
+
   	Board.new(new_grid)
   end
 
@@ -100,11 +119,6 @@ class Board
   	self[*coord].is_a?(EmptySquare)
   end
 
-  def enemy_piece?(coord, opponent_color)
-  	self[*coord].color == opponent_color
-  end
-
-
   protected
 
 	  def populate_evens(color)
@@ -112,6 +126,7 @@ class Board
 	  	(0..7).each do |number|
 	  	  number.even? ? arr << Piece.new(color, self) : arr << EmptySquare.new
 	  	end
+
 	  	arr	
 	  end
 
@@ -120,6 +135,7 @@ class Board
 	  	(0..7).each do |number|
 	  	  number.odd? ? arr << Piece.new(color, self) : arr << EmptySquare.new
 	  	end
+
 	  	arr	
 	  end
 
@@ -138,23 +154,29 @@ class Board
 	  	grid << populate_evens(:b)
 	  end
 
+#TODO make this human player
 	  def move_cursor
-	  	render
+	  	display
 	  	key_input = show_single_key
 	  	intended_location = transpose_delta(cursor, KEY_PRESSES[key_input])
 	  	until onboard?(intended_location)
-	  	  render
+	  	  display
 	  	  key_input = show_single_key
 	  	  intended_location = transpose_delta(cursor, KEY_PRESSES[key_input])
 	  	end
+
 	  	intended_location
 	  end
 
 	  def print_with_background(square, color)
-	  	print square.to_view.colorize(background: color)
+	  	print square.display.colorize(background: color)
 	  end
 
 end
+
+board = Board.new
+
+p board[1, 4].move_values
 
 
 
