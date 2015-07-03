@@ -1,4 +1,5 @@
 require 'colorize'
+require 'byebug'
 
 class EmptySquare
   attr_reader :color
@@ -25,11 +26,17 @@ class Piece
   	w: [ [1, -1], [1, 1] ]
   }
 
+  
+
   def initialize(color, board)
   	@color = color
   	@board = board
   	@kinged = false
   	@opponent_color = color == :w ? :b : :w
+  end
+
+  def dup(new_board)
+  	Piece.new(@color, new_board)
   end
 
   def display
@@ -40,11 +47,18 @@ class Piece
   	slide(coords) + jump(coords)
   end
 
-  def move_values
-		MOVES.values
+  def jump(coords)
+		deltas = kinged ? MOVES[:b] + MOVES[:w] : MOVES[color]
+		
+		potential_jumps = []
+		deltas.each do |delta|
+			enemy, potential_jump = find_enemy_and_jump(delta, coords)
+		  potential_jumps << potential_jump if jumpable?(enemy, potential_jump)
+		end
+		potential_jumps
 	end
 
-  protected
+ protected
 
 	def set_color(visual)
 	  color == :w ? visual.colorize(:white) : visual.colorize(:black)
@@ -65,25 +79,16 @@ class Piece
 		slides
 	end
 
-	def jump(coords)
-		jumps = []
-		deltas = kinged ? MOVES[:b] + MOVES[:w] : MOVES[color]
-		deltas.each do |delta|
-		  jump_delta = delta.map {|coord| coord * 2}
-		  potential_jump = board.transpose_delta(coords, jump_delta)
-		  potential_enemy = board.transpose_delta(coords, delta)
-		  if jumpable?(potential_enemy, potential_jump)
-		    jumps << potential_jump
-		  end
-		end
+	def find_enemy_and_jump(delta, coords)
+		jump_delta = delta.map { |coord| coord * 2 }
+	  potential_jump = board.transpose_delta(coords, jump_delta)
+	  potential_enemy = board.transpose_delta(coords, delta)
 
-		jumps
+	  [potential_enemy, potential_jump]
 	end
 
-
-
 	def empty_space_on_board?(coords)
-	    board.onboard?(coords) && board.is_empty?(coords)
+	  board.onboard?(coords) && board.is_empty?(coords)
 	end
 end
 

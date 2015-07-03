@@ -46,6 +46,7 @@ class Board
   	  end
   	  puts
   	end
+  	p available
   end
 
   def available
@@ -57,7 +58,7 @@ class Board
   end
 
 #TODO make this human player
-  def make_selection(color)
+  def make_selection
   	place_holder = @cursor
   	@cursor = move_cursor
   	until place_holder == @cursor
@@ -87,19 +88,6 @@ class Board
   	enemy_row = (start_pos[0] + end_pos[0]) / 2
     enemy_column = (start_pos[1] + end_pos[1]) / 2
     self[enemy_row, enemy_column] = EmptySquare.new
-  end
-
-  def deep_dup
-  	new_grid = []
-  	grid.each do |row|
-  	  new_line = []
-  	  row.each do |square|
-  	  	new_line << square.dup
-  	  end
-  	  new_grid << new_line
-  	end
-
-  	Board.new(new_grid)
   end
 
   def over?
@@ -174,9 +162,6 @@ class Board
 
 end
 
-board = Board.new
-
-p board[1, 4].move_values
 
 
 
