@@ -58,6 +58,10 @@ class Piece
 		potential_jumps
 	end
 
+	def king
+		@kinged = true
+	end
+
  protected
 
 	def set_color(visual)

@@ -22,6 +22,7 @@ class Game
 	  	  end_pos = second_move
 	  	  board.move(continued_pos, end_pos)
 	  	end
+	  	board[*end_pos].king if [0, 7].include?(end_pos[0])
 
   	  @players.rotate!
   	end
